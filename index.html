@@ -1,0 +1,86 @@
+<h1 id="js_response">
+  Add this to your URL to get <a href="https://en.wikipedia.org/wiki/6to4">6to4</a>-ed IPv6 address(es) from IPv4 <br />
+  <code>/?IPv4=[IPv4 HERE]/[IP PREFIX]</code>
+</h1>
+<style>
+  * {
+    font-family: sans-serif;
+    background-color: black;
+    color: aqua;
+    text-align: center;
+  }
+</style>
+<script>
+  // HTTP --> HTTPS
+  if (location.protocol === "http:") {
+    location.replace(window.location.href.replace("http:", "https:"));
+  }
+
+  function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(
+      /[?&]+([^=&]+)=([^&]*)/gi,
+      function(m, key, value) {
+        vars[key] = value;
+      }
+    );
+    return vars;
+  }
+
+  // getUrlVars()["x"];
+
+  /** IPV4 CIDR to IPV6 CIDR conversion **/
+  function covertIPv6(x) {
+    let ipV4 = x;
+    let address = ipV4.split("/");
+    let classValues = [];
+
+    if (address.length) {
+      classValues = address[0].split(".");
+    }
+
+    if (classValues.length) {
+      let str = classValues.reduce((acc, val, ind) => {
+        let mod = +val >= 16 ? +val % 16 : +val;
+        let divider = +val >= 16 ? (val - mod) / 16 : 0;
+        const hexaCode = hexaVal => {
+          switch (hexaVal) {
+            case 10:
+              hexaVal = "A";
+              break;
+            case 11:
+              hexaVal = "B";
+              break;
+            case 12:
+              hexaVal = "C";
+              break;
+            case 13:
+              hexaVal = "D";
+              break;
+            case 14:
+              hexaVal = "E";
+              break;
+            case 15:
+              hexaVal = "F";
+              break;
+            default:
+              hexaVal = hexaVal;
+              break;
+          }
+          return hexaVal;
+        };
+        mod = hexaCode(mod);
+        divider = hexaCode(divider);
+        return ind === 1 ? `${acc}${divider}${mod}:` : `${acc}${divider}${mod}`;
+      }, "");
+      return `2002:${str}::/${address[1]}`;
+    }
+    return "Invalid Address";
+  }
+
+  // Run the function
+  document.getElementById("js_response").innerHTML =
+    "<center>Your IPv6 address (generated using <a href='https://www.ripe.net/about-us/press-centre/ipv6-chart_2015.pdf'>CIDR</a> & 6to4) is: <br /><em><code>" +
+    covertIPv6(getUrlVars()["IPv4"]) +
+    "</code></em> based off your IPv4<br /><footer>API coming soon!!<br />Made by <a href='https://discord.gg/myuyJqH'>youngchief btw ツ</a></footer></center>";
+</script>
